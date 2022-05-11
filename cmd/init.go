@@ -23,12 +23,13 @@ var initCmd = &cobra.Command{
 		if len(args) == 0 {
 			fmt.Println(errors.New("gos: fail to generate project.\n" +
 				"Example usage:\n" +
-				" gos init example.com/m' to initialize a v0 or v1 module\n" +
-				" gos init example.com/m/v2' to initialize a v2 module\n\n" +
-				"Run 'gos init -h' for more information."))
+				" gs init example.com/m' to initialize a v0 or v1 module\n" +
+				" gs init example.com/m/v2' to initialize a v2 module\n\n" +
+				"Run 'gs init -h' for more information."))
 			return
 		}
 		utils.InitProject(framework_name, args[0])
+		utils.NewPackages(args[0])
 		fmt.Printf("Create %s based on %s successfully!\n", args[0], framework_name)
 	},
 }
