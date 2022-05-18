@@ -3,11 +3,14 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 	"text/template"
+
+	"github.com/spf13/viper"
 )
 
 func GetJsonStream(path string) interface{} {
@@ -49,6 +52,14 @@ func parseIndex(name, path string) *frame {
 	fp.Write(data)
 	conf := GetConf("index", "/packages/")
 	subpath := conf.GetString(name)
+	if !crashCheck(subpath) {
+		fmt.Println(subpath + " exist!")
+		return nil
+	}
+	index := strings.IndexByte(name, '-')
+	if index != -1 {
+		name = name[index+1:]
+	}
 	path = strings.Replace(path, "index.yml", subpath+"/"+name+".json", -1)
 	res, err = http.Get(path)
 	Panic(err)
@@ -69,6 +80,39 @@ func parseIndex(name, path string) *frame {
 		if k == "version" {
 			f.version = v.(string)
 		}
+		if k == "branch" {
+			f.branch = v.(string)
+		}
+		if k == "key" {
+			f.key = v.(string)
+		}
 	}
 	return f
+}
+
+func NewPackages(module_name string) {
+	fp, err := os.Create("packages.yml")
+	Panic(err)
+	defer fp.Close()
+	packages := viper.New()
+	packages.SetConfigFile("./packages.yml")
+	Panic(packages.ReadInConfig())
+	packages.SetDefault("module", module_name)
+	packages.WriteConfigAs("packages.yml")
+}
+
+func crashCheck(name string) bool {
+	_, err := os.Stat("./packages.yml")
+	if err != nil {
+		return true
+	}
+	fp, err := os.Open("./packages.yml")
+	Panic(err)
+	defer fp.Close()
+	data, err := ioutil.ReadAll(fp)
+	Panic(err)
+	if strings.Index(string(data), strings.Split(name, "/")[1]) == -1 {
+		return true
+	}
+	return false
 }
