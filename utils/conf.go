@@ -7,11 +7,14 @@ import (
 )
 
 func GetConf(filename, path string) *viper.Viper {
-	dir := os.Getenv("GOPATH") + "\\src\\gos"
+	return newConf(filename, "yaml", os.Getenv("GOPATH")+"\\src\\gos"+path)
+}
+
+func newConf(confName, confType, dir string) *viper.Viper {
 	conf := viper.New()
-	conf.SetConfigName(filename)
-	conf.SetConfigType("yml")
-	conf.AddConfigPath(dir + path)
+	conf.SetConfigName(confName)
+	conf.SetConfigType(confType)
+	conf.AddConfigPath(dir)
 	Panic(conf.ReadInConfig())
 	return conf
 }

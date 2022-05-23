@@ -9,8 +9,6 @@ import (
 	"os"
 	"strings"
 	"text/template"
-
-	"github.com/spf13/viper"
 )
 
 func GetJsonStream(path string) interface{} {
@@ -69,24 +67,12 @@ func parseIndex(name, path string) *frame {
 	data, err = ioutil.ReadAll(res.Body)
 	Panic(err)
 	fp.Write(data)
-	json_data := GetJsonStream(rootPath + "/packages/" + subpath + "/" + name + ".json")
+	json_data := newConf(name, "json", rootPath+"/packages/"+subpath+"/")
 	f := &frame{}
-	for k, v := range json_data.(map[string]interface{}) {
-		if k == "path" {
-			for _, _v := range v.([]interface{}) {
-				f.path = append(f.path, _v.(string))
-			}
-		}
-		if k == "version" {
-			f.version = v.(string)
-		}
-		if k == "branch" {
-			f.branch = v.(string)
-		}
-		if k == "key" {
-			f.key = v.(string)
-		}
-	}
+	f.path = json_data.GetStringSlice("path")
+	f.version = json_data.GetString("version")
+	f.key = json_data.GetString("key")
+	f.branch = json_data.GetString("branch")
 	return f
 }
 
@@ -94,9 +80,7 @@ func NewPackages(module_name string) {
 	fp, err := os.Create("packages.yml")
 	Panic(err)
 	defer fp.Close()
-	packages := viper.New()
-	packages.SetConfigFile("./packages.yml")
-	Panic(packages.ReadInConfig())
+	packages := newConf("packages", "yaml", ".")
 	packages.SetDefault("module", module_name)
 	packages.WriteConfigAs("packages.yml")
 }

@@ -8,8 +8,6 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-
-	"github.com/spf13/viper"
 )
 
 var wg sync.WaitGroup
@@ -72,9 +70,7 @@ func InitProject(framework_name, module_name string) {
 }
 
 func GetLibary(libary_name string) {
-	conf := viper.New()
-	conf.SetConfigFile("packages.yml")
-	conf.ReadInConfig()
+	conf := newConf("packages", "yaml", ".")
 	if conf.GetString("scaffold."+libary_name) != "" {
 		fmt.Println(libary_name + " exist!")
 		return
